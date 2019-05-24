@@ -135,6 +135,9 @@ public class InAppBrowser extends CordovaPlugin {
     private String footerColor = "";
     private String[] allowedSchemes;
 
+    public static final String ABA_HOST = "ababank.com";
+    public static final String ABA_SCHEME = "abamobilebank";
+
     /**
      * Executes the request and returns PluginResult.
      *
@@ -1061,6 +1064,14 @@ public class InAppBrowser extends CordovaPlugin {
          */
         @Override
         public boolean shouldOverrideUrlLoading(WebView webView, String url) {
+            String host = Uri.parse(url).getHost();
+            String urlScheme = Uri.parse(url).getScheme();
+
+            if(isPaywayDeeplink(host, urlScheme)) {
+              openDeeplink(url);
+              return false;
+            }
+
             if (url.startsWith(WebView.SCHEME_TEL)) {
                 try {
                     Intent intent = new Intent(Intent.ACTION_DIAL);
@@ -1136,6 +1147,18 @@ public class InAppBrowser extends CordovaPlugin {
 
             return false;
         }
+
+        // Start of your custom code for opening deep link of ABA pay
+        private boolean isPaywayDeeplink(String host, String scheme) {
+            return host.equalsIgnoreCase(ABA_HOST) && scheme.equalsIgnoreCase(ABA_SCHEME);
+        }
+
+        private void openDeeplink(String url){
+            Intent intent = new Intent(Intent.ACTION_VIEW);
+            intent.setData(Uri.parse(url));
+            cordova.getActivity().startActivity(intent);
+        }
+        // End of custom code
 
 
         /*
